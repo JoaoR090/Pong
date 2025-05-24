@@ -1,10 +1,13 @@
 use ggez::{
-    conf::WindowMode,
-    event::{self, EventHandler},
-    graphics::{self, Canvas, Color, DrawMode, DrawParam, Mesh, Rect, Text, TextFragment},
-    input::keyboard::{KeyCode, KeyboardContext},
-    Context, ContextBuilder, GameResult,
+    conf::WindowMode, context, event::{self, EventHandler}, graphics::{self, Canvas, Color, DrawMode, DrawParam, Mesh, Rect, Text, TextFragment, GraphicsContext}, input::keyboard::KeyCode, Context, ContextBuilder, GameResult
 };
+
+mod colisao;
+mod ball;
+use crate::ball::Ball;
+
+mod raquete;
+use crate::raquete::Raquete;
 
 struct MeuJogo {
     l_paddle: Rect,
@@ -14,68 +17,16 @@ struct MeuJogo {
     r_score: u32,
 }
 
-struct Ball {
-    rect: Rect,
-    x_vel: f32,
-    y_vel: f32,
-}
-
-impl Ball {
-    pub fn atualizar_posicao(&mut self){
-        self.rect.x += self.x_vel;
-        self.rect.y += self.y_vel;
-    }
-}
-
 impl MeuJogo {
     pub fn new() -> Self {
+        let rect_ball = Rect::new(390.0, 290.0, 20.0, 20.0);
         Self {
             l_paddle: Rect::new(50.0, 250.0, 10.0, 100.0),
             r_paddle: Rect::new(730.0, 250.0, 10.0, 100.0),
-            ball: Ball {
-                rect: Rect::new(390.0, 290.0, 20.0, 20.0),
-                x_vel: 2.0,
-                y_vel: 2.0,
-            },
+            ball: Ball::new(rect_ball, 2.0, 2.0),
             l_score: 0,
             r_score: 0,
         }
-    }
-
-    pub fn controle_raquete(&mut self, velocidade: f32, ctx: &mut Context){
-
-        let teclado = &ctx.keyboard;
-
-        //controle da raquete esquerda
-
-        if teclado.is_key_pressed(KeyCode::W) && !(self.l_paddle.y <= 0.0) {
-            self.l_paddle.y -= velocidade;
-        }
-        if teclado.is_key_pressed(KeyCode::S) && !((self.l_paddle.y + self.l_paddle.h) >= 600.0) {
-            self.l_paddle.y += velocidade;
-        }
-
-        //controle da raquede direita
-        if teclado.is_key_pressed(KeyCode::Up) && !(self.r_paddle.y <= 0.0) {
-            self.r_paddle.y -= velocidade;
-        }
-        if teclado.is_key_pressed(KeyCode::Down) && !((self.r_paddle.y + self.r_paddle.h) >= 600.0) {
-            self.r_paddle.y += velocidade;
-        }
-    }
-
-    pub fn angulo(&mut self, paddle : &Rect){
-        let mut angle = (self.ball.rect.center().y - paddle.center().y)/ paddle.h / 2.0;
-        if angle < 0.0{
-            angle *= -1.0;
-        }
-
-        if self.ball.y_vel < 0.0 {
-            self.ball.y_vel = (angle * 80.0) * self.ball.x_vel * - 1.0;
-            return;
-        }
-
-        self.ball.y_vel = angle * self.ball.x_vel;
     }
 }
 
@@ -83,15 +34,16 @@ impl EventHandler for MeuJogo {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         const VELOCIDADE: f32 = 5.0;
 
-        self.controle_raquete(VELOCIDADE, ctx); 
+        let size = ctx.gfx.window().inner_size();
+        let (width, height) = (size.width as f32, size.height as f32);
+
+
+        self.l_paddle.movimentacao(ctx, VELOCIDADE, KeyCode::W, KeyCode::S, height);
+        self.r_paddle.movimentacao(ctx, VELOCIDADE, KeyCode::Up, KeyCode::Down, height);
 
         // Colisão com as bordas e atualiza posição da bola
-        if self.ball.rect.top() <= 0.0 || self.ball.rect.bottom() >= 600.0 {
-            self.ball.y_vel = - self.ball.y_vel;
-            self.ball.atualizar_posicao();
-        } else {
-            self.ball.atualizar_posicao();
-        }
+        self.ball.rebater_borda(height);
+        self.ball.atualizar_posicao();
 
         // Colisão com as raquetes
             //raquete esquerda
@@ -102,7 +54,7 @@ impl EventHandler for MeuJogo {
             self.ball.x_vel = -self.ball.x_vel;
             self.ball.rect.x += distance;
             let l_paddle = self.l_paddle.clone();
-            self.angulo(&l_paddle);
+            self.ball.rebater_com_angulo(&l_paddle); 
         }
         
             //raquete direita
@@ -112,20 +64,16 @@ impl EventHandler for MeuJogo {
             self.ball.x_vel = -self.ball.x_vel;
             self.ball.rect.x += distance;
             let r_paddle = self.r_paddle.clone();
-            self.angulo(&r_paddle);
+            self.ball.rebater_com_angulo(&r_paddle);
         }
 
         //reinicio da bola
-        if self.ball.rect.left() <= 0.0 {
+        if self.ball.left() <= 0.0 {
             self.r_score += 1;
-            self.ball.rect.x = 390.0;
-            self.ball.x_vel = 2.0;
-            self.ball.y_vel = 2.0;
-        } else if self.ball.rect.right() >= 800.0 {
+            self.ball.reinicio_ball(width, height);
+        } else if self.ball.right() >= width {
             self.l_score += 1;
-            self.ball.rect.x = 390.0;
-            self.ball.x_vel = 2.0;
-            self.ball.y_vel = 2.0;
+            self.ball.reinicio_ball(width, height);
         }
 
         Ok(())
