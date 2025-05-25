@@ -25,14 +25,14 @@ Evita que a struct Bola seja responsável por múltiplas tarefas (como desenho, 
 ### 2. Composição sobre Herança
 Onde:
 
-src/core/traits.rs
+- src/core/traits.rs
 pub trait Geometria {
     fn top(&self) -> f32;
     fn bottom(&self) -> f32;
     ...
 }
 
-src/logica/fisica_bola.rs
+- src/logica/fisica_bola.rs
 impl Geometria for Bola {
     fn top(&self) -> f32 { self.rect.top() }
     fn bottom(&self) -> f32 { self.rect.bottom() }
@@ -48,12 +48,12 @@ Permite adicionar funções como top() ou bottom() usando interfaces(traits) sem
 
 Onde:
 
-src/core/traits.rs
+- src/core/traits.rs
 pub trait MovimentacaoBola {
     fn mover(&mut self);
 }
 
-src/logica/fisica_bola.rs
+- src/logica/fisica_bola.rs
 impl MovimentacaoBola for Bola {
     fn mover(&mut self) {
         self.rect.x += self.velocidade.x;
@@ -70,13 +70,13 @@ Evita que a struct Bola precise implementar métodos que só fazem sentido para 
 
 Onde:
 
-src/core/traits.rs
+- src/core/traits.rs
 pub trait Geometria {
     fn top(&self) -> f32;
     // ...
 }
 
-src/logica/fisica_bola.rs
+- src/logica/fisica_bola.rs
 impl Geometria for Bola {
     fn top(&self) -> f32 { self.rect.top() }
 }
