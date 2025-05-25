@@ -17,23 +17,20 @@ impl Bola {
         }
     }    
 
-    pub fn top(&self) -> f32{
-        self.rect.top()
-    }
-
-    pub fn bottom(&self) -> f32{
-        self.rect.bottom()
-    }
-
-    pub fn left(&self) -> f32{
-        self.rect.left()
-    }
-
-    pub fn right(&self) -> f32{
-        self.rect.right()
-    }
-
-    pub fn rect(&self) -> Rect{
+    pub fn get_rect(&self) -> Rect{
         self.rect
+    }
+
+     pub fn mover(&mut self) {
+        self.mover_x(self.x_vel);
+        self.mover_y(self.y_vel);
+    }
+
+    pub fn mover_x(&mut self, dx: f32) {
+        self.rect.x += dx;
+    }
+
+    pub fn mover_y(&mut self, dy: f32) {
+        self.rect.y += dy;
     }
 }

@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 ggez = { version = "0.9.3", default-features = false }
+rand = "0.8"
