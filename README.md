@@ -67,6 +67,7 @@ Evita que a struct Bola precise implementar métodos que só fazem sentido para 
 
 ### 4. Lei de Demeter
 
+Onde:
 src/core/traits.rs
 pub trait Geometria {
     fn top(&self) -> f32;
