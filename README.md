@@ -47,6 +47,7 @@ Permite adicionar funções como top() ou bottom() usando interfaces(traits) sem
 ### 3. Segregação de Interface
 
 Onde:
+
 src/core/traits.rs
 pub trait MovimentacaoBola {
     fn mover(&mut self);
@@ -68,6 +69,7 @@ Evita que a struct Bola precise implementar métodos que só fazem sentido para 
 ### 4. Lei de Demeter
 
 Onde:
+
 src/core/traits.rs
 pub trait Geometria {
     fn top(&self) -> f32;
